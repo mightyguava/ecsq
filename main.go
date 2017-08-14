@@ -273,6 +273,7 @@ Use the "task" command to get details of a task. For example:
 			{"Task Definition", taskDefinition},
 			{"Container Instance", containerInstanceID},
 			{"EC2 Instance", *containerInstance.Ec2InstanceId},
+			{"EC2 Instance Private IP", *ec2Instance.PrivateIpAddress},
 			{"Task Link", TaskLink(argClusterName, taskID)},
 			{"Task Definition Link", TaskDefinitionLink(taskDefinitionARN)},
 			{"Container Instance Link", ContainerInstanceLink(argClusterName, containerInstanceID)},
