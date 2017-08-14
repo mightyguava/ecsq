@@ -6,6 +6,26 @@ data in compact, tabular format in most cases, with links to the AWS console whe
 Other than querying, it has a command to fetch and dump environment variables in shell and Docker
 compatible formats for local development.
 
+## Installation
+
+`ecsq` is distributed via Go. Make sure you have Go installed, and run
+
+```
+go get -u github.com/mightyguava/ecsq
+```
+
+## Configuration and credentials
+
+`ecsq` uses the `~/.aws/credentials` and `~/.aws/config` for credentials and configuration, respectively.
+
+You can also use the standard AWS CLI environment variables for overriding them. The common environment variables are
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_ACCESS_SECRET_KEY`
+- `AWS_DEFAULT_REGION`
+
+More parameters can be found in [Configuring the AWS CLI](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
+
 ## Overview
 
 The `ecsq` tool can query AWS ECS by cluster, service, or task. The `--help` option shows the
@@ -43,23 +63,6 @@ Commands:
     List environment variables for the task's container
 ```
 
-## Installation
-
-`ecsq` is distributed via Go. Make sure you have Go installed, and run
-
-```
-go get -u github.com/mightyguava/ecsq
-```
-
-## Configuration and credentials
-
-`ecsq` uses the ~/.aws/credentials and ~/.aws/config files, and the default AWS environment variables
-for setting credentials and configuration. The common environment variables are
-
-- `AWS_ACCESS_KEY_ID`
-- `AWS_ACCESS_SECRET_KEY`
-- `AWS_DEFAULT_REGION`
-
 ## List clusters
 
 `ecsq clusters` lists the ECS clusters in our AWS account.
@@ -82,7 +85,7 @@ while.
 
 ```
 > ecsq services ecs-prod
-Found 6 services
+Found 3 services
 +------------------------------+--------+---------+---------+---------+
 |             SERVICE NAME     | STATUS | DESIRED | RUNNING | PENDING |
 +------------------------------+--------+---------+---------+---------+
