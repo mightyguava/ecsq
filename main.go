@@ -22,13 +22,24 @@ import (
 )
 
 func main() {
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
-		SharedConfigState:       session.SharedConfigEnable,
-	}))
-	svc := ecs.New(sess)
+	var (
+		sess       *session.Session
+		svc        *ecs.ECS
+		AWSProfile string
+	)
 
 	app := kingpin.New("ecsq", "A friendly ECS CLI")
+	app.Flag("profile", "AWS profile to use. Overrides the ~/.aws/config and AWS_DEFAULT_PROFILE").StringVar(&AWSProfile)
+	app.PreAction(func(ctx *kingpin.ParseContext) error {
+		// Initialize the session and service before any commands are run
+		sess = session.Must(session.NewSessionWithOptions(session.Options{
+			Profile:                 AWSProfile,
+			AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
+			SharedConfigState:       session.SharedConfigEnable,
+		}))
+		svc = ecs.New(sess)
+		return nil
+	})
 	app.Command("clusters", "List existing clusters").
 		Action(func(ctx *kingpin.ParseContext) error {
 			result, err := svc.ListClusters(&ecs.ListClustersInput{})
