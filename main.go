@@ -25,7 +25,7 @@ func main() {
 	}))
 	svc := ecs.New(sess)
 
-	app := kingpin.New("ecs", "A friendly ECS CLI")
+	app := kingpin.New("ecsq", "A friendly ECS CLI")
 	app.Command("clusters", "List existing clusters").
 		Action(func(ctx *kingpin.ParseContext) error {
 			result, err := svc.ListClusters(&ecs.ListClustersInput{})

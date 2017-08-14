@@ -1,19 +1,19 @@
-# ECS CLI
+# ECS Query CLI
 
-The `ecs` CLI tool provides a set of simple commands to query ECS for information. It presents the
+The `ecsq` CLI tool provides a set of simple commands to query ECS for information. It presents the
 data in compact, tabular format in most cases, with links to the AWS console where useful.
 
-Other than querying, it has a command to dump environment variables in formats useful for local
-development.
+Other than querying, it has a command to fetch and dump environment variables in shell and Docker
+compatible formats for local development.
 
 ## Overview
 
-The `ecs` tool can query AWS ECS by cluster, service, or task. The `--help` option shows the
+The `ecsq` tool can query AWS ECS by cluster, service, or task. The `--help` option shows the
 commands.
 
 ```
-> ecs
-usage: ecs [<flags>] <command> [<args> ...]
+> ecsq
+usage: ecsq [<flags>] <command> [<args> ...]
 
 A friendly ECS CLI
 
@@ -43,12 +43,29 @@ Commands:
     List environment variables for the task's container
 ```
 
-## List clusters
+## Installation
 
-`ecs clusters` lists the ECS clusters in our AWS account.
+`ecsq` is distributed via Go. Make sure you have Go installed, and run
 
 ```
-> ecs clusters
+go get -u github.com/mightyguava/ecsq
+```
+
+## Configuration and credentials
+
+`ecsq` uses the ~/.aws/credentials and ~/.aws/config files, and the default AWS environment variables
+for setting credentials and configuration. The common environment variables are
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_ACCESS_SECRET_KEY`
+- `AWS_DEFAULT_REGION`
+
+## List clusters
+
+`ecsq clusters` lists the ECS clusters in our AWS account.
+
+```
+> ecsq clusters
 +------------------------+---------------------+-----------------+---------------+---------------+
 |      CLUSTER NAME      | CONTAINER INSTANCES | ACTIVE SERVICES | RUNNING TASKS | PENDING TASKS |
 +------------------------+---------------------+-----------------+---------------+---------------+
@@ -60,11 +77,11 @@ Commands:
 
 ## List services
 
-`ecs services` lists the services within a cluster. For large clusters. this command can take a
+`ecsq services` lists the services within a cluster. For large clusters. this command can take a
 while.
 
 ```
-> ecs services ecs-prod
+> ecsq services ecs-prod
 Found 6 services
 +------------------------------+--------+---------+---------+---------+
 |             SERVICE NAME     | STATUS | DESIRED | RUNNING | PENDING |
@@ -77,10 +94,10 @@ Found 6 services
 
 ## Describe service
 
-`ecs service` shows the details of a service, and provides useful links to the dashboard.
+`ecsq service` shows the details of a service, and provides useful links to the dashboard.
 
 ```
-> ecs service ecs-prod service-my-blog-ecs-prod
+> ecsq service ecs-prod service-my-blog-ecs-prod
 Service
 +----------------------+-----------------------------------------------------------------------------------------------------------------------------------+
 | Name                 | service-applepicker-ecs-prod                                                                                                      |
@@ -106,11 +123,11 @@ Containers
 
 ## List tasks
 
-`ecs tasks` lists the tasks belonging to the service, by ARN. It's not useful by itself, but the
-ARNs can be given to the `ecs task` command to get task details:
+`ecsq tasks` lists the tasks belonging to the service, by ARN. It's not useful by itself, but the
+ARNs can be given to the `ecsq task` command to get task details:
 
 ```
-> ecs tasks ecs-prod service-applepicker-ecs-prod
+> ecsq tasks ecs-prod service-applepicker-ecs-prod
 
 Running Tasks:
 	arn:aws:ecs:us-west-2:4817267453:task/bfbf861b-7f10-4dfb-b344-32169dc3e55c
@@ -118,27 +135,27 @@ Running Tasks:
 Stopped Tasks:
 
 Use the "task" command to get details of a task. For example:
-	ecs task ecs-prod arn:aws:ecs:us-west-2:4817267453:task/bfbf861b-7f10-4dfb-b344-32169dc3e55c
+	ecsq task ecs-prod arn:aws:ecs:us-west-2:4817267453:task/bfbf861b-7f10-4dfb-b344-32169dc3e55c
 ```
 
 ## Describe task
 
-`ecs task` shows the details of a given task, by ARN, and provides useful links to the dashboard.
+`ecsq task` shows the details of a given task, by ARN, and provides useful links to the dashboard.
 
 ```
-> ecs task ecs-prod arn:aws:ecs:us-west-2:192431242:task/bfbf861b-7f10-4dfb-b344-32169dc3e55c
+> ecsq task ecs-prod arn:aws:ecs:us-west-2:192431242:task/bfbf861b-7f10-4dfb-b344-32169dc3e55c
 Details:
-+-------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Task ID                 | bfbf861b-7f10-4dfb-b344-32169dc3e55c                                                                                                                  |
-| Task ARN                | arn:aws:ecs:us-west-2:192431242:task/bfbf861b-7f10-4dfb-b344-32169dc3e55c                                                                             |
-| Task Definition         | task-applepicker-ecs-prod                                                                                                                             |
-| Container Instance      | 44019f70-aa88-48e3-babf-4614e10afe08                                                                                                                  |
-| EC2 Instance            | i-072932614cc14ccf9                                                                                                                                   |
-| Task Link               | https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/ecs-prod/tasks/bfbf861b-7f10-4dfb-b344-32169dc3e55c                      |
-| Task Definition Link    | https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/taskDefinitions/task-applepicker-ecs-prod/                                        |
-| Container Instance Link | https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/ecs-prod/containerInstances/44019f70-aa88-48e3-babf-4614e10afe08         |
-| EC2 Instance Link       | https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:instanceId=i-072932614cc14ccf9                                        |
-+-------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------+
++-------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| Task ID                 | bfbf861b-7f10-4dfb-b344-32169dc3e55c                                                                                                          |
+| Task ARN                | arn:aws:ecs:us-west-2:192431242:task/bfbf861b-7f10-4dfb-b344-32169dc3e55c                                                                     |
+| Task Definition         | task-applepicker-ecs-prod                                                                                                                     |
+| Container Instance      | 44019f70-aa88-48e3-babf-4614e10afe08                                                                                                          |
+| EC2 Instance            | i-072932614cc14ccf9                                                                                                                           |
+| Task Link               | https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/ecs-prod/tasks/bfbf861b-7f10-4dfb-b344-32169dc3e55c              |
+| Task Definition Link    | https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/taskDefinitions/task-applepicker-ecs-prod/                                |
+| Container Instance Link | https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/ecs-prod/containerInstances/44019f70-aa88-48e3-babf-4614e10afe08 |
+| EC2 Instance Link       | https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:instanceId=i-072932614cc14ccf9                                |
++-------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 Containers:
 +-------------+--------------------------+--------------------+
 | applepicker | Status                   | RUNNING            |
@@ -154,7 +171,7 @@ Containers:
 
 ## Show container environment variables
 
-`ecs container-env` fetches and dumps environment variables for a service's container definition. It
+`ecsq container-env` fetches and dumps environment variables for a service's container definition. It
 can often be useful to run a container locally with the same configuration as on ECS.
 
 The command supports 3 formats, set with the `--format` flag
@@ -166,7 +183,7 @@ into the `env` function
 - `docker` renders the environment variables as `-e` flags to the `docker` command
 
 ```
-> ecs container-env ecs-prod service-applepicker-ecs-prod --container applepicker
+> ecsq container-env ecs-prod service-applepicker-ecs-prod --container applepicker
 +-------------------+---------+
 |       NAME        |  VALUE  |
 +-------------------+---------+
@@ -176,13 +193,13 @@ into the `env` function
 | ORCHARD_API_TOKEN | xxxxxxx |
 +------------------+----------+
 
-> ecs container-env ecs-prod service-applepicker-ecs-prod --format=shell --container applepicker
+> ecsq container-env ecs-prod service-applepicker-ecs-prod --format=shell --container applepicker
 NODE_ENV="prod" PORT="3000" ORCHARD_API_KEY="xxxxxxxx" ORCHARD_API_TOKEN="xxxxxxxx"
 
-> ecs container-env ecs-prod service-applepicker-ecs-prod --format=docker --container applepicker
+> ecsq container-env ecs-prod service-applepicker-ecs-prod --format=docker --container applepicker
 -eNODE_ENV="prod" -ePORT="3000" -eORCHARD_API_KEY="xxxxxxxx" -eORCHARD_API_TOKEN="xxxxxxxx"
 
-> ecs container-env ecs-prod service-applepicker-ecs-prod --format=export --container applepicker
+> ecsq container-env ecs-prod service-applepicker-ecs-prod --format=export --container applepicker
 export NODE_ENV="prod"
 export PORT="3000"
 export ORCHARD_API_KEY="xxxxxxx"
