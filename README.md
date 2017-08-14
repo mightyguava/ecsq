@@ -14,6 +14,13 @@ compatible formats for local development.
 go get -u github.com/mightyguava/ecsq
 ```
 
+## Upgrading
+
+`ecsq` does not yet follow semantic versioning. Upgrading uses the same command as installing
+```
+go get -u github.com/mightyguava/ecsq
+```
+
 ## Configuration and credentials
 
 `ecsq` uses the `~/.aws/credentials` and `~/.aws/config` for credentials and configuration, respectively.
