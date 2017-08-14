@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -111,7 +112,7 @@ func main() {
 	describeServiceCommand.Action(func(ctx *kingpin.ParseContext) error {
 		result, err := svc.DescribeServices(&ecs.DescribeServicesInput{
 			Cluster:  &argClusterName,
-			Services: []*string{aws.String(ParseServiceName(argClusterName, argServiceName))},
+			Services: []*string{aws.String(FormatServiceName(argClusterName, argServiceName))},
 		})
 		app.FatalIfError(err, "Could not describe service")
 		if len(result.Services) == 0 {
@@ -186,7 +187,7 @@ Events:
 	listTasksCommand.Arg("service", "Name of the service. This can be the full AWS service name, or the short one without the service- prefix and -<cluster> suffix").
 		Required().StringVar(&argServiceName)
 	listTasksCommand.Action(func(ctx *kingpin.ParseContext) error {
-		serviceName := ParseServiceName(argClusterName, argServiceName)
+		serviceName := FormatServiceName(argClusterName, argServiceName)
 		runningTasks, err := getTasksArns(svc, argClusterName, serviceName, ecs.DesiredStatusRunning)
 		app.FatalIfError(err, "Could not list tasks")
 		stoppedTasks, err := getTasksArns(svc, argClusterName, serviceName, ecs.DesiredStatusStopped)
@@ -417,7 +418,7 @@ func getTaskDetail(svc *ecs.ECS, clusterName, taskID string) (*ecs.Task, error) 
 func getServiceDetail(svc *ecs.ECS, clusterName, serviceName string) (*ecs.Service, error) {
 	result, err := svc.DescribeServices(&ecs.DescribeServicesInput{
 		Cluster:  &clusterName,
-		Services: []*string{aws.String(ParseServiceName(clusterName, serviceName))},
+		Services: []*string{aws.String(FormatServiceName(clusterName, serviceName))},
 	})
 	if err != nil {
 		return nil, err
@@ -458,12 +459,32 @@ func EC2InstanceLink(ec2Instance string) string {
 	return fmt.Sprintf(tmpl, ec2Instance)
 }
 
-// ParseServiceName parses a potentially short service name and returns the full service name
-func ParseServiceName(cluster, service string) string {
-	if strings.HasPrefix(service, "service-") {
-		return service
+// FormatServiceName parses a potentially short service name and returns the full service name
+func FormatServiceName(cluster, service string) string {
+	var (
+		serviceNameExpansion = os.Getenv("ECSQ_SERVICE_NAME_EXPANSION")
+		serviceNameTemplate  *template.Template
+		err                  error
+	)
+	if serviceNameExpansion != "" {
+		serviceNameTemplate, err = template.New("serviceName").Parse(serviceNameExpansion)
+		if err != nil {
+			panic(fmt.Errorf("Invalid ECSQ_SERVICE_NAME_EXPANSION template %v", err))
+		}
+		buffer := bytes.NewBuffer(nil)
+		err = serviceNameTemplate.Execute(buffer, struct {
+			Name    string
+			Cluster string
+		}{
+			Name:    service,
+			Cluster: cluster,
+		})
+		if err != nil {
+			panic(fmt.Errorf("Invalid ECSQ_SERVICE_NAME_EXPANSION template %v", err))
+		}
+		return buffer.String()
 	}
-	return "service-" + service + "-" + cluster
+	return service
 }
 
 func getTasksArns(svc *ecs.ECS, clusterName, serviceName, status string) ([]*string, error) {

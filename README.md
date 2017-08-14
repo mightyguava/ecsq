@@ -205,3 +205,11 @@ export PORT="3000"
 export ORCHARD_API_KEY="xxxxxxx"
 export ORCHARD_API_TOKEN="xxxxxxx"
 ```
+
+## Environment Variables
+
+`ECSQ_SERVICE_NAME_EXPANSION` can be used to specify a Golang template string to expand the provided
+service name to. This is kind of an obscure option, to allow writing shorter service names if your
+service names follow a predefined format. For example, if your services names follow the format
+`service-{{.Name}}-{{.Cluster}}`, then the service `applepicker` on cluster `ecs-prod` will be
+expanded to `service-applepicker-ecs-prod` when querying ECS.
