@@ -214,7 +214,7 @@ Stopped Tasks:
 {{- end }}
 
 Use the "task" command to get details of a task. For example:
-	ecs task {{.Cluster}} {{.ExampleTask}}
+	ecsq task {{.Cluster}} {{.ExampleTask}}
 `
 		t := template.New("list-tasks")
 		t, err = t.Parse(tmpl)
