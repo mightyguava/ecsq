@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -478,9 +479,14 @@ func FormatServiceName(cluster, service string) string {
 	var (
 		serviceNameExpansion = os.Getenv("ECSQ_SERVICE_NAME_EXPANSION")
 		serviceNameTemplate  *template.Template
-		err                  error
 	)
 	if serviceNameExpansion != "" {
+		// First detect if service name has already been expanded.
+		interpolateRegex := regexp.MustCompile("{{.*}}")
+		alreadyExpandedRegex, err := regexp.Compile(interpolateRegex.ReplaceAllString(serviceNameExpansion, ".*"))
+		if err == nil && alreadyExpandedRegex.MatchString(service) {
+			return service
+		}
 		serviceNameTemplate, err = template.New("serviceName").Parse(serviceNameExpansion)
 		if err != nil {
 			panic(fmt.Errorf("Invalid ECSQ_SERVICE_NAME_EXPANSION template %v", err))
