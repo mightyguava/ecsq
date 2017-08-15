@@ -76,6 +76,7 @@ func main() {
 	listServicesCommand.Flag("link", "Whether to render links to the AWS console").BoolVar(&listServicesShowLink)
 	listServicesCommand.Action(func(ctx *kingpin.ParseContext) error {
 		services := &ecs.DescribeServicesOutput{}
+		fmt.Print("Found 0 services")
 		err := svc.ListServicesPages(&ecs.ListServicesInput{Cluster: &argClusterName},
 			func(page *ecs.ListServicesOutput, lastPage bool) bool {
 				result, err := svc.DescribeServices(&ecs.DescribeServicesInput{
@@ -85,9 +86,10 @@ func main() {
 				app.FatalIfError(err, "Could not describe services")
 				services.Failures = append(services.Failures, result.Failures...)
 				services.Services = append(services.Services, result.Services...)
-				fmt.Printf("Found %v services\n", len(services.Services))
+				fmt.Printf("\rFound %v services", len(services.Services))
 				return true
 			})
+		fmt.Print("\n")
 		app.FatalIfError(err, "Could list services")
 		ServiceSlice(services.Services).Sort()
 		table := tablewriter.NewWriter(os.Stdout)
