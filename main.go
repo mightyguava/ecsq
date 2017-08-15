@@ -213,7 +213,7 @@ Events:
 		if len(runningTasks) > 0 {
 			exampleTask = runningTasks[0]
 		} else {
-			exampleTask = runningTasks[1]
+			exampleTask = stoppedTasks[0]
 		}
 		tmpl := `
 Running Tasks:
