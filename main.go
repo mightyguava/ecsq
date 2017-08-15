@@ -409,8 +409,8 @@ func ParseARN(s string) *ARN {
 	if len(typeName) >= 2 {
 		arn.Name = typeName[1]
 	}
-	if len(pieces) >= 8 {
-		arn.Instance = pieces[7]
+	if len(pieces) >= 7 {
+		arn.Instance = pieces[6]
 	}
 	return arn
 }
