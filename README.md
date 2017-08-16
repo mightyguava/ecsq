@@ -194,7 +194,7 @@ Containers:
 +-------------+--------------------------+--------------------+
 ```
 
-## Show container environment variables
+## Show (and source) container environment variables
 
 `ecsq container-env` fetches and dumps environment variables for a service's container definition. It
 can often be useful to run a container locally with the same configuration as on ECS.
@@ -206,6 +206,9 @@ The command supports 3 formats, set with the `--format` flag
 into the `env` function
 - `export` renders the environment variables as `export` statements to `bash` or `zsh`
 - `docker` renders the environment variables as `-e` flags to the `docker` command
+
+Running the command as `eval "$(ecsq container-env <my_cluster> <my_service>) --format=export"` will
+automatically populate your environment with container's ECS environment variables.
 
 ```
 > ecsq container-env ecs-prod service-applepicker-ecs-prod --container applepicker
