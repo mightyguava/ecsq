@@ -46,6 +46,7 @@ A friendly ECS CLI
 
 Flags:
   --help  Show context-sensitive help (also try --help-long and --help-man).
+  --profile=PROFILE  AWS profile to use. Overrides the ~/.aws/config and AWS_DEFAULT_PROFILE
 
 Commands:
   help [<command>...]
@@ -88,7 +89,7 @@ Commands:
 ## List services
 
 `ecsq services` lists the services within a cluster. For large clusters. this command can take a
-while.
+while. Results can be filtered using the `--filter` flag.
 
 ```
 > ecsq services ecs-prod

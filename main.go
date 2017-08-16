@@ -71,10 +71,12 @@ func main() {
 	var (
 		argClusterName       string
 		listServicesShowLink bool
+		listServicesFilter   string
 	)
 	listServicesCommand := app.Command("services", "List services within the cluster")
 	listServicesCommand.Arg("cluster", "Name of the cluster").Required().StringVar(&argClusterName)
 	listServicesCommand.Flag("link", "Whether to render links to the AWS console").BoolVar(&listServicesShowLink)
+	listServicesCommand.Flag("filter", "Service name to filter for, as a substring.").StringVar(&listServicesFilter)
 	listServicesCommand.Action(func(ctx *kingpin.ParseContext) error {
 		services := &ecs.DescribeServicesOutput{}
 		fmt.Print("Found 0 services")
@@ -100,6 +102,9 @@ func main() {
 		}
 		table.SetHeader(header)
 		for _, service := range services.Services {
+			if !strings.Contains(*service.ServiceName, listServicesFilter) {
+				continue
+			}
 			row := []string{
 				*service.ServiceName,
 				*service.Status,
