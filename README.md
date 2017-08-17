@@ -139,11 +139,11 @@ Containers
 ```
 > ecsq service ecs-prod service-applepicker-ecs-prod
 ...
-2017-08-11T18:08:05Z: (service service-warehouse-sqs-event-worker-ecs-staging) has reached a steady state.
-2017-08-15T12:12:08Z: (service service-warehouse-sqs-event-worker-ecs-staging) has reached a steady state.
-2017-08-15T18:12:21Z: (service service-warehouse-sqs-event-worker-ecs-staging) has reached a steady state.
-2017-08-15T19:00:53Z: (service service-warehouse-sqs-event-worker-ecs-staging) has stopped 2 running tasks: (task 02262781-54d0-4d1a-b76f-77693b0547f1) (task 56dce574-c297-41ef-8ec8-7b00477c5bfa).
-2017-08-15T19:01:04Z: (service service-warehouse-sqs-event-worker-ecs-staging) has reached a steady state.
+2017-08-11T18:08:05Z: (service service-applepicker-ecs-prod) has reached a steady state.
+2017-08-15T12:12:08Z: (service service-applepicker-ecs-prod) has reached a steady state.
+2017-08-15T18:12:21Z: (service service-applepicker-ecs-prod) has reached a steady state.
+2017-08-15T19:00:53Z: (service service-applepicker-ecs-prod) has stopped 2 running tasks: (task 02262781-54d0-4d1a-b76f-77693b0547f1) (task 56dce574-c297-41ef-8ec8-7b00477c5bfa).
+2017-08-15T19:01:04Z: (service service-applepicker-ecs-prod) has reached a steady state.
 ```
 
 ## List tasks
