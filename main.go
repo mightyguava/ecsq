@@ -78,7 +78,7 @@ func main() {
 	listServicesCommand.Flag("filter", "Service name to filter for, as a substring.").StringVar(&listServicesFilter)
 	listServicesCommand.Action(func(ctx *kingpin.ParseContext) error {
 		services := &ecs.DescribeServicesOutput{}
-		fmt.Print("Found 0 services")
+		fmt.Fprint(os.Stderr, "Found 0 services")
 		err := svc.ListServicesPages(&ecs.ListServicesInput{Cluster: &argClusterName},
 			func(page *ecs.ListServicesOutput, lastPage bool) bool {
 				result, err := svc.DescribeServices(&ecs.DescribeServicesInput{
@@ -88,10 +88,10 @@ func main() {
 				app.FatalIfError(err, "Could not describe services")
 				services.Failures = append(services.Failures, result.Failures...)
 				services.Services = append(services.Services, result.Services...)
-				fmt.Printf("\rFound %v services", len(services.Services))
+				fmt.Fprintf(os.Stderr, "\rFound %v services", len(services.Services))
 				return true
 			})
-		fmt.Print("\n")
+		fmt.Fprint(os.Stderr, "\n")
 		app.FatalIfError(err, "Could list services")
 		ServiceSlice(services.Services).Sort()
 		table := tablewriter.NewWriter(os.Stdout)
