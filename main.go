@@ -311,7 +311,7 @@ Use the "task" command to get details of a task. For example:
 			table.Append([]string{*container.Name, "Status", *container.LastStatus})
 			if *container.LastStatus == "STOPPED" || *container.LastStatus == "FAILED" {
 				table.Append([]string{*container.Name, "Exit Code", strconv.FormatInt(*container.ExitCode, 10)})
-				table.Append([]string{*container.Name, "Reason", *container.Reason})
+				table.Append([]string{*container.Name, "Reason", aws.StringValue(container.Reason)})
 			}
 			for _, network := range container.NetworkBindings {
 				table.Append([]string{
