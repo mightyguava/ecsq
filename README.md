@@ -3,8 +3,18 @@
 The `ecsq` CLI tool provides a set of simple commands to query ECS for information. It presents the
 data in compact, tabular format in most cases, with links to the AWS console where useful.
 
-Other than querying, it has a command to fetch and dump environment variables in shell and Docker
-compatible formats for local development.
+# What's so special about this compared to the `aws-cli`?
+
+Well, if the tabular output and short, consistent commands doesn't interest you, not much. This tool
+is about saving a few steps in my workflow.
+
+The `aws-cli` tool is great for fetching the information, but it produces giant blobs of JSON and
+can sometimes take a few invocations to get what I want. `ecsq` can be seen as a script that does a
+few things on top of `aws-cli`. The major improvements, other than how information is presented, are
+
+1. `eval "$(ecsq container-env <cluster> <service> --format=export)"` sources the production
+   environment variables into your shell
+2. direct links to the AWS console for services and tasks
 
 ## Installation
 
