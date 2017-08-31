@@ -384,7 +384,7 @@ Use the "task" command to get details of a task. For example:
 			fmt.Println(envStr)
 		} else if flagFormat == "export" {
 			for _, env := range containerDefinition.Environment {
-				fmt.Printf("export %v=\"%v\"\n", *env.Name, *env.Value)
+				fmt.Printf("export %v='%v'\n", *env.Name, *env.Value)
 			}
 		} else if flagFormat == "docker" {
 			envStr := ""
