@@ -354,12 +354,12 @@ Use the "task" command to get details of a task. For example:
 		flagContainerName string
 		flagFormat        string
 	)
-	containerEnvCommand := app.Command("container-env", "List environment variables for the task's container")
+	containerEnvCommand := app.Command("container-env", "List environment variables for the task's container. Use --format to choose the output format")
 	containerEnvCommand.Arg("cluster", "Name of the cluster").Required().StringVar(&argClusterName)
 	containerEnvCommand.Arg("service", "Name of the service. This can be the full AWS service name, or the short one without the service- prefix and -<cluster> suffix").Required().StringVar(&argServiceName)
 	containerEnvCommand.Flag("container", "Name of the container").StringVar(&flagContainerName)
-	containerEnvCommand.Flag("format", "Format to render the environment variable in").
-		Default("table").HintOptions("shell", "docker", "table").StringVar(&flagFormat)
+	containerEnvCommand.Flag("format", "Format to render the environment variable in. The options are: shell, docker, table. Defaults to table").
+		Default("table").EnumVar(&flagFormat, "shell", "docker", "table")
 	containerEnvCommand.Action(func(ctx *kingpin.ParseContext) error {
 		task, err := getServiceDetail(svc, argClusterName, argServiceName)
 		app.FatalIfError(err, "Could not describe service")
