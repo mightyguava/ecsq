@@ -55,7 +55,7 @@ usage: ecsq [<flags>] <command> [<args> ...]
 A friendly ECS CLI
 
 Flags:
-  --help  Show context-sensitive help (also try --help-long and --help-man).
+  --help             Show context-sensitive help (also try --help-long and --help-man).
   --profile=PROFILE  AWS profile to use. Overrides the ~/.aws/config and AWS_DEFAULT_PROFILE
 
 Commands:
@@ -72,10 +72,10 @@ Commands:
     Show details of a service
 
   tasks <cluster> <service>
-    List tasks belong to a service
+    List tasks belonging to a service
 
-  task <cluster> <task>
-    Describe the given task
+  task <cluster> <task or service>
+    Describe the given task. If a service name is provided instead, describes an arbitrary task for that service.
 
   container-env [<flags>] <cluster> <service>
     List environment variables for the task's container
@@ -104,13 +104,13 @@ while. Results can be filtered using the `--filter` flag.
 ```
 > ecsq services ecs-prod
 Found 3 services
-+------------------------------+--------+---------+---------+---------+
-|             SERVICE NAME     | STATUS | DESIRED | RUNNING | PENDING |
-+------------------------------+--------+---------+---------+---------+
-| service-applepicker-ecs-prod | ACTIVE |       6 |       6 |       0 |
-| service-helloworld-ecs-prod  | ACTIVE |      89 |      89 |       0 |
-| service-my-blog-ecs-prod     | ACTIVE |       5 |       5 |       0 |
-+------------------------------+--------+---------+---------+---------+
++--------------+--------+---------+--------+----------+
+| SERVICE NAME | STATUS | DESIRED | RUNNING | PENDING |
++--------------+--------+---------+--------+----------+
+| applepicker  | ACTIVE |       6 |       6 |       0 |
+| helloworld   | ACTIVE |      89 |      89 |       0 |
+| my-blog      | ACTIVE |       5 |       5 |       0 |
++--------------+--------+---------+--------+----------+
 ```
 
 ## Describe service
@@ -118,21 +118,21 @@ Found 3 services
 `ecsq service` shows the details of a service, and provides useful links to the dashboard.
 
 ```
-> ecsq service ecs-prod service-applepicker-ecs-prod
+> ecsq service ecs-prod applepicker
 Service
-+----------------------+-----------------------------------------------------------------------------------------------------------------------------------+
-| Name                 | service-applepicker-ecs-prod                                                                                                      |
-| Status               | ACTIVE                                                                                                                            |
-| Service ARN          | arn:aws:ecs:us-west-2:4817267453:service/service-applepicker-ecs-prod                                                             |
-| Task Definition      | arn:aws:ecs:us-west-2:4817267453:task-definition/task-applepicker-ecs-prod:38                                                     |
-| Desired Count        | 1                                                                                                                                 |
-| Running Count        | 1                                                                                                                                 |
-| Pending Count        | 0                                                                                                                                 |
-| Service Link         | https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/ecs-prod/services/service-applepicker-ecs-prod/tasks |
-| Task Definition Link | https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/taskDefinitions/task-applepicker-ecs-prod/                    |
-| LB Container Name    | ngfe                                                                                                                              |
-| LB Container Port    | 8000                                                                                                                              |
-+----------------------+-----------------------------------------------------------------------------------------------------------------------------------+
++----------------------+------------------------------------------------------------------------------------------------------------------+
+| Name                 | applepicker                                                                                                      |
+| Status               | ACTIVE                                                                                                           |
+| Service ARN          | arn:aws:ecs:us-west-2:4817267453:service/applepicker                                                             |
+| Task Definition      | arn:aws:ecs:us-west-2:4817267453:task-definition/task-applepicker-ecs-prod:38                                    |
+| Desired Count        | 1                                                                                                                |
+| Running Count        | 1                                                                                                                |
+| Pending Count        | 0                                                                                                                |
+| Service Link         | https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/ecs-prod/services/applepicker/tasks |
+| Task Definition Link | https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/taskDefinitions/task-applepicker-ecs-prod/   |
+| LB Container Name    | ngfe                                                                                                             |
+| LB Container Port    | 8000                                                                                                             |
++----------------------+------------------------------------------------------------------------------------------------------------------+
 Containers
 +-------------+-----+--------+---------+
 |    NAME     | CPU | MEMORY | COMMAND |
@@ -147,13 +147,13 @@ Containers
 `ecsq service --events` lists events for that service in addition to the service details.
 
 ```
-> ecsq service ecs-prod service-applepicker-ecs-prod
+> ecsq service ecs-prod applepicker
 ...
-2017-08-11T18:08:05Z: (service service-applepicker-ecs-prod) has reached a steady state.
-2017-08-15T12:12:08Z: (service service-applepicker-ecs-prod) has reached a steady state.
-2017-08-15T18:12:21Z: (service service-applepicker-ecs-prod) has reached a steady state.
-2017-08-15T19:00:53Z: (service service-applepicker-ecs-prod) has stopped 2 running tasks: (task 02262781-54d0-4d1a-b76f-77693b0547f1) (task 56dce574-c297-41ef-8ec8-7b00477c5bfa).
-2017-08-15T19:01:04Z: (service service-applepicker-ecs-prod) has reached a steady state.
+2017-08-11T18:08:05Z: (service applepicker) has reached a steady state.
+2017-08-15T12:12:08Z: (service applepicker) has reached a steady state.
+2017-08-15T18:12:21Z: (service applepicker) has reached a steady state.
+2017-08-15T19:00:53Z: (service applepicker) has stopped 2 running tasks: (task 02262781-54d0-4d1a-b76f-77693b0547f1) (task 56dce574-c297-41ef-8ec8-7b00477c5bfa).
+2017-08-15T19:01:04Z: (service applepicker) has reached a steady state.
 ```
 
 ## List tasks
@@ -162,7 +162,7 @@ Containers
 ARNs can be given to the `ecsq task` command to get task details:
 
 ```
-> ecsq tasks ecs-prod service-applepicker-ecs-prod
+> ecsq tasks ecs-prod applepicker
 
 Running Tasks:
 	arn:aws:ecs:us-west-2:4817267453:task/bfbf861b-7f10-4dfb-b344-32169dc3e55c
@@ -175,9 +175,12 @@ Use the "task" command to get details of a task. For example:
 
 ## Describe task
 
-`ecsq task` shows the details of a given task, by ARN, and provides useful links to the dashboard.
+`ecsq task` shows the details of a given task, by ARN or task ID, and provides useful links to the
+dashboard. If a service name is provided instead of an ARN/ID, then it will look up an arbitrary
+task for the service and provide its details
 
 ```
+> ecsq task ecs-prod applepicker
 > ecsq task ecs-prod arn:aws:ecs:us-west-2:192431242:task/bfbf861b-7f10-4dfb-b344-32169dc3e55c
 Details:
 +-------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
@@ -221,7 +224,7 @@ Running the command as `eval "$(ecsq container-env <my_cluster> <my_service>) --
 automatically populate your environment with container's ECS environment variables.
 
 ```
-> ecsq container-env ecs-prod service-applepicker-ecs-prod --container applepicker
+> ecsq container-env ecs-prod applepicker --container applepicker
 +-------------------+---------+
 |       NAME        |  VALUE  |
 +-------------------+---------+
@@ -231,13 +234,13 @@ automatically populate your environment with container's ECS environment variabl
 | ORCHARD_API_TOKEN | xxxxxxx |
 +------------------+----------+
 
-> ecsq container-env ecs-prod service-applepicker-ecs-prod --format=shell --container applepicker
+> ecsq container-env ecs-prod applepicker --format=shell --container applepicker
 NODE_ENV="prod" PORT="3000" ORCHARD_API_KEY="xxxxxxxx" ORCHARD_API_TOKEN="xxxxxxxx"
 
-> ecsq container-env ecs-prod service-applepicker-ecs-prod --format=docker --container applepicker
+> ecsq container-env ecs-prod applepicker --format=docker --container applepicker
 -eNODE_ENV="prod" -ePORT="3000" -eORCHARD_API_KEY="xxxxxxxx" -eORCHARD_API_TOKEN="xxxxxxxx"
 
-> ecsq container-env ecs-prod service-applepicker-ecs-prod --format=export --container applepicker
+> ecsq container-env ecs-prod applepicker --format=export --container applepicker
 export NODE_ENV="prod"
 export PORT="3000"
 export ORCHARD_API_KEY="xxxxxxx"

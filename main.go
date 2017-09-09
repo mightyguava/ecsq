@@ -166,7 +166,7 @@ func main() {
 		app.FatalIfError(err, "Could not describe task definition")
 		fmt.Println("Containers")
 		table = tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Name", "CPU", "Memory", "Command"})
+		table.SetHeader([]string{"Name", "Image", "CPU", "Memory", "Command"})
 		for _, container := range tdr.TaskDefinition.ContainerDefinitions {
 			command := []string{}
 			for _, piece := range container.Command {
@@ -174,6 +174,7 @@ func main() {
 			}
 			table.Append([]string{
 				*container.Name,
+				*container.Image,
 				strconv.FormatInt(*container.Cpu, 10),
 				strconv.FormatInt(*container.Memory, 10),
 				strings.Join(command, " "),
@@ -202,7 +203,7 @@ Events:
 		return nil
 	})
 
-	listTasksCommand := app.Command("tasks", "List tasks belong to a service")
+	listTasksCommand := app.Command("tasks", "List tasks belonging to a service")
 	listTasksCommand.Arg("cluster", "Name of the cluster").Required().StringVar(&argClusterName)
 	listTasksCommand.Arg("service", "Name of the service. This can be the full AWS service name, or the short one without the service- prefix and -<cluster> suffix").
 		Required().StringVar(&argServiceName)
@@ -254,10 +255,24 @@ Use the "task" command to get details of a task. For example:
 		return nil
 	})
 	var argTaskID string
-	describeTaskCommand := app.Command("task", "Describe the given task")
+	describeTaskCommand := app.Command("task", "Describe the given task. If a service name is provided instead, describes an arbitrary task for that service.")
 	describeTaskCommand.Arg("cluster", "Name of the cluster").Required().StringVar(&argClusterName)
-	describeTaskCommand.Arg("task", "ID or ARN of the task").Required().StringVar(&argTaskID)
+	describeTaskCommand.Arg("task or service", "ID or ARN of the task or name of service").Required().StringVar(&argTaskID)
 	describeTaskCommand.Action(func(ctx *kingpin.ParseContext) error {
+		if !isTaskARN(argTaskID) && !isUUID(argTaskID) {
+			fmt.Println("Invalid task ID, assuming this is a service name. Looking up arbitrary task for service")
+			serviceName := FormatServiceName(argClusterName, argTaskID)
+			taskArns, err := getTasksArns(svc, argClusterName, serviceName, "RUNNING")
+			if err != nil {
+				fmt.Println("Error listing tasks", err)
+				return nil
+			}
+			if len(taskArns) == 0 {
+				fmt.Println("No tasks found for service ", serviceName)
+				return nil
+			}
+			argTaskID = *taskArns[0]
+		}
 		task, err := getTaskDetail(svc, argClusterName, argTaskID)
 		app.FatalIfError(err, "Could not describe task")
 		containerInstanceResult, err := svc.DescribeContainerInstances(&ecs.DescribeContainerInstancesInput{
@@ -424,6 +439,16 @@ func ParseARN(s string) *ARN {
 		arn.Instance = pieces[6]
 	}
 	return arn
+}
+
+const reUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+func isTaskARN(s string) bool {
+	return regexp.MustCompile(`arn:aws:ecs:[a-z]+-[a-z]+-\d:\d+:task/` + reUUID).MatchString(s)
+}
+
+func isUUID(s string) bool {
+	return regexp.MustCompile(reUUID).MatchString(s)
 }
 
 func getTaskDetail(svc *ecs.ECS, clusterName, taskID string) (*ecs.Task, error) {
