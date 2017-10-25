@@ -221,7 +221,9 @@ into the `env` function
 - `docker` renders the environment variables as `-e` flags to the `docker` command
 
 Running the command as `eval "$(ecsq container-env <my_cluster> <my_service>) --format=export"` will
-automatically populate your environment with container's ECS environment variables.
+automatically populate your environment with container's ECS environment variables. If you want to omit
+specific variables here, you can provide a comma-separated list of names via the `--drop` flag. This list is
+case-insensitive, e.g. `--drop node_env,port` is the same as `--drop NODE_ENV,PORT`.
 
 ```
 > ecsq container-env ecs-prod applepicker --container applepicker

@@ -353,6 +353,7 @@ Use the "task" command to get details of a task. For example:
 	var (
 		flagContainerName string
 		flagFormat        string
+		flagDrop          string
 	)
 	containerEnvCommand := app.Command("container-env", "List environment variables for the task's container. Use --format to choose the output format")
 	containerEnvCommand.Arg("cluster", "Name of the cluster").Required().StringVar(&argClusterName)
@@ -360,6 +361,7 @@ Use the "task" command to get details of a task. For example:
 	containerEnvCommand.Flag("container", "Name of the container").StringVar(&flagContainerName)
 	containerEnvCommand.Flag("format", "Format to render the environment variable in. The options are: export, shell, docker, table. Defaults to table").
 		Default("table").EnumVar(&flagFormat, "export", "shell", "docker", "table")
+	containerEnvCommand.Flag("drop", "Case-insensitive comma-separated list of variable names to drop").StringVar(&flagDrop)
 	containerEnvCommand.Action(func(ctx *kingpin.ParseContext) error {
 		task, err := getServiceDetail(svc, argClusterName, argServiceName)
 		app.FatalIfError(err, "Could not describe service")
@@ -388,6 +390,23 @@ Use the "task" command to get details of a task. For example:
 			app.Fatalf("Container not found")
 		}
 		KeyValuePairSlice(containerDefinition.Environment).Sort()
+
+		if flagDrop != "" {
+			filters := map[string]bool{}
+			for _, filter := range strings.Split(flagDrop, ",") {
+				filters[strings.ToLower(strings.TrimSpace(filter))] = true
+			}
+
+			filtered := []*ecs.KeyValuePair{}
+			for _, pair := range containerDefinition.Environment {
+				if _, ok := filters[strings.ToLower(*pair.Name)]; !ok {
+					filtered = append(filtered, pair)
+				}
+			}
+
+			containerDefinition.Environment = filtered
+		}
+
 		if flagFormat == "table" {
 			table := tablewriter.NewWriter(os.Stdout)
 			table.SetHeader([]string{"Name", "Value"})
