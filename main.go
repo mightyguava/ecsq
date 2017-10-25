@@ -353,7 +353,7 @@ Use the "task" command to get details of a task. For example:
 	var (
 		flagContainerName string
 		flagFormat        string
-		flagFilter        string
+		flagDrop          string
 	)
 	containerEnvCommand := app.Command("container-env", "List environment variables for the task's container. Use --format to choose the output format")
 	containerEnvCommand.Arg("cluster", "Name of the cluster").Required().StringVar(&argClusterName)
@@ -361,7 +361,7 @@ Use the "task" command to get details of a task. For example:
 	containerEnvCommand.Flag("container", "Name of the container").StringVar(&flagContainerName)
 	containerEnvCommand.Flag("format", "Format to render the environment variable in. The options are: export, shell, docker, table. Defaults to table").
 		Default("table").EnumVar(&flagFormat, "export", "shell", "docker", "table")
-	containerEnvCommand.Flag("filter", "Case-insensitive comma-separated list of variable names to drop").StringVar(&flagFilter)
+	containerEnvCommand.Flag("drop", "Case-insensitive comma-separated list of variable names to drop").StringVar(&flagDrop)
 	containerEnvCommand.Action(func(ctx *kingpin.ParseContext) error {
 		task, err := getServiceDetail(svc, argClusterName, argServiceName)
 		app.FatalIfError(err, "Could not describe service")
@@ -391,9 +391,9 @@ Use the "task" command to get details of a task. For example:
 		}
 		KeyValuePairSlice(containerDefinition.Environment).Sort()
 
-		if flagFilter != "" {
+		if flagDrop != "" {
 			filters := map[string]bool{}
-			for _, filter := range strings.Split(flagFilter, ",") {
+			for _, filter := range strings.Split(flagDrop, ",") {
 				filters[strings.ToLower(strings.TrimSpace(filter))] = true
 			}
 
