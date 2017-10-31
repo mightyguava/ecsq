@@ -203,18 +203,37 @@ Events:
 		return nil
 	})
 
+	var listTasksStatusFlag string
+	var listTasksRawFlag bool
 	listTasksCommand := app.Command("tasks", "List tasks belonging to a service")
 	listTasksCommand.Arg("cluster", "Name of the cluster").Required().StringVar(&argClusterName)
 	listTasksCommand.Arg("service", "Name of the service. This can be the full AWS service name, or the short one without the service- prefix and -<cluster> suffix").
 		Required().StringVar(&argServiceName)
+	listTasksCommand.Flag("status", "Status of the service. The options are running, stopped, and all. Defaults to all").
+		Default("all").EnumVar(&listTasksStatusFlag, "all", "running", "stopped")
+	listTasksCommand.Flag("raw", "Show output in raw format, one task per line").BoolVar(&listTasksRawFlag)
 	listTasksCommand.Action(func(ctx *kingpin.ParseContext) error {
 		serviceName := FormatServiceName(argClusterName, argServiceName)
-		runningTasks, err := getTasksArns(svc, argClusterName, serviceName, ecs.DesiredStatusRunning)
+		var runningTasks, stoppedTasks []*string
+		var err error
+		if listTasksStatusFlag == "all" || listTasksStatusFlag == "running" {
+			runningTasks, err = getTasksArns(svc, argClusterName, serviceName, ecs.DesiredStatusRunning)
+		}
 		app.FatalIfError(err, "Could not list tasks")
-		stoppedTasks, err := getTasksArns(svc, argClusterName, serviceName, ecs.DesiredStatusStopped)
+		if listTasksStatusFlag == "all" || listTasksStatusFlag == "stopped" {
+			stoppedTasks, err = getTasksArns(svc, argClusterName, serviceName, ecs.DesiredStatusStopped)
+		}
 		app.FatalIfError(err, "Could not list tasks")
 		if len(runningTasks) == 0 && len(stoppedTasks) == 0 {
 			fmt.Println("No tasks found")
+			return nil
+		}
+
+		if listTasksRawFlag {
+			tasks := append(runningTasks, stoppedTasks...)
+			for _, task := range tasks {
+				fmt.Println(*task)
+			}
 			return nil
 		}
 		var exampleTask *string
