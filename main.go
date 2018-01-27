@@ -31,7 +31,7 @@ func main() {
 
 	app := kingpin.New("ecsq", "A friendly ECS CLI")
 	app.Flag("profile", "AWS profile to use. Overrides the ~/.aws/config and AWS_DEFAULT_PROFILE").StringVar(&AWSProfile)
-	app.Flag("region", "AWS region").Default("us-east-1").OverrideDefaultFromEnvar("AWS_DEFAULT_REGION").StringVar(&AWSRegion)
+	app.Flag("region", "AWS region").Default("us-west-2").OverrideDefaultFromEnvar("AWS_DEFAULT_REGION").StringVar(&AWSRegion)
 	app.PreAction(func(ctx *kingpin.ParseContext) error {
 		// Initialize the session and service before any commands are run
 		sess = session.Must(session.NewSessionWithOptions(session.Options{
