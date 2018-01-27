@@ -26,13 +26,16 @@ func main() {
 		sess       *session.Session
 		svc        *ecs.ECS
 		AWSProfile string
+		AWSRegion  string
 	)
 
 	app := kingpin.New("ecsq", "A friendly ECS CLI")
 	app.Flag("profile", "AWS profile to use. Overrides the ~/.aws/config and AWS_DEFAULT_PROFILE").StringVar(&AWSProfile)
+	app.Flag("region", "AWS region").Default("us-east-1").OverrideDefaultFromEnvar("AWS_DEFAULT_REGION").StringVar(&AWSRegion)
 	app.PreAction(func(ctx *kingpin.ParseContext) error {
 		// Initialize the session and service before any commands are run
 		sess = session.Must(session.NewSessionWithOptions(session.Options{
+			Config:                  aws.Config{Region: aws.String(AWSRegion)},
 			Profile:                 AWSProfile,
 			AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
 			SharedConfigState:       session.SharedConfigEnable,
@@ -112,7 +115,7 @@ func main() {
 				strconv.FormatInt(*service.PendingCount, 10),
 			}
 			if listServicesShowLink {
-				row = append(row, ServiceLink(argClusterName, *service.ServiceName))
+				row = append(row, ServiceLink(AWSRegion, argClusterName, *service.ServiceName))
 			}
 			table.Append(row)
 		}
@@ -150,8 +153,8 @@ func main() {
 			{"Desired Count", strconv.FormatInt(*service.DesiredCount, 10)},
 			{"Running Count", strconv.FormatInt(*service.RunningCount, 10)},
 			{"Pending Count", strconv.FormatInt(*service.PendingCount, 10)},
-			{"Service Link", ServiceLink(argClusterName, *service.ServiceName)},
-			{"Task Definition Link", TaskDefinitionLink(ParseARN(*service.TaskDefinition))},
+			{"Service Link", ServiceLink(AWSRegion, argClusterName, *service.ServiceName)},
+			{"Task Definition Link", TaskDefinitionLink(AWSRegion, ParseARN(*service.TaskDefinition))},
 		}
 		table.AppendBulk(rows)
 		if len(service.LoadBalancers) > 0 {
@@ -328,10 +331,10 @@ Use the "task" command to get details of a task. For example:
 			{"Container Instance", containerInstanceID},
 			{"EC2 Instance", *containerInstance.Ec2InstanceId},
 			{"EC2 Instance Private IP", *ec2Instance.PrivateIpAddress},
-			{"Task Link", TaskLink(argClusterName, taskID)},
-			{"Task Definition Link", TaskDefinitionLink(taskDefinitionARN)},
-			{"Container Instance Link", ContainerInstanceLink(argClusterName, containerInstanceID)},
-			{"EC2 Instance Link", EC2InstanceLink(*containerInstance.Ec2InstanceId)},
+			{"Task Link", TaskLink(AWSRegion, argClusterName, taskID)},
+			{"Task Definition Link", TaskDefinitionLink(AWSRegion, taskDefinitionARN)},
+			{"Container Instance Link", ContainerInstanceLink(AWSRegion, argClusterName, containerInstanceID)},
+			{"EC2 Instance Link", EC2InstanceLink(AWSRegion, *containerInstance.Ec2InstanceId)},
 		}
 		table.AppendBulk(rows)
 		fmt.Println("Details:")
@@ -518,33 +521,33 @@ func getServiceDetail(svc *ecs.ECS, clusterName, serviceName string) (*ecs.Servi
 }
 
 // ServiceLink returns the URL to the ECS service on the AWS console
-func ServiceLink(cluster, service string) string {
-	tmpl := "https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/%v/services/%v/tasks"
-	return fmt.Sprintf(tmpl, cluster, service)
+func ServiceLink(region, cluster, service string) string {
+	tmpl := "https://%v.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/%v/services/%v/tasks"
+	return fmt.Sprintf(tmpl, region, cluster, service)
 }
 
 // TaskLink returns the URL to the ECS task on the AWS console
-func TaskLink(cluster, taskID string) string {
-	tmpl := "https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/%v/tasks/%v"
-	return fmt.Sprintf(tmpl, cluster, taskID)
+func TaskLink(region, cluster, taskID string) string {
+	tmpl := "https://%v.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/%v/tasks/%v"
+	return fmt.Sprintf(tmpl, region, cluster, taskID)
 }
 
 // TaskDefinitionLink returns the URL to the ECS task definition on the AWS console.
-func TaskDefinitionLink(taskDefinition *ARN) string {
-	tmpl := "https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/taskDefinitions/%v/%v"
-	return fmt.Sprintf(tmpl, taskDefinition.Name, taskDefinition.Instance)
+func TaskDefinitionLink(region string, taskDefinition *ARN) string {
+	tmpl := "https://%v.console.aws.amazon.com/ecs/home?region=us-west-2#/taskDefinitions/%v/%v"
+	return fmt.Sprintf(tmpl, region, taskDefinition.Name, taskDefinition.Instance)
 }
 
 // ContainerInstanceLink returns the URL to the ECS container instance on the AWS console.
-func ContainerInstanceLink(cluster, containerInstance string) string {
-	tmpl := "https://us-west-2.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/%v/containerInstances/%v"
-	return fmt.Sprintf(tmpl, cluster, containerInstance)
+func ContainerInstanceLink(region, cluster, containerInstance string) string {
+	tmpl := "https://%v.console.aws.amazon.com/ecs/home?region=us-west-2#/clusters/%v/containerInstances/%v"
+	return fmt.Sprintf(tmpl, region, cluster, containerInstance)
 }
 
 // EC2InstanceLink returns the URL to the EC2 instance on the AWS console.
-func EC2InstanceLink(ec2Instance string) string {
-	tmpl := "https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:instanceId=%v"
-	return fmt.Sprintf(tmpl, ec2Instance)
+func EC2InstanceLink(region, ec2Instance string) string {
+	tmpl := "https://%v.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:instanceId=%v"
+	return fmt.Sprintf(tmpl, region, ec2Instance)
 }
 
 // FormatServiceName parses a potentially short service name and returns the full service name
