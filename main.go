@@ -387,7 +387,7 @@ Use the "task" command to get details of a task. For example:
 	containerEnvCommand.Flag("container", "Name of the container").StringVar(&flagContainerName)
 	containerEnvCommand.Flag("format", "Format to render the environment variable in. The options are: export, shell, docker, table. Defaults to table").
 		Default("table").EnumVar(&flagFormat, "export", "shell", "docker", "table")
-	containerEnvCommand.Flag("drop", "Case-insensitive comma-separated list of variable names to drop").StringVar(&flagDrop)
+	containerEnvCommand.Flag("drop", "Case-insensitive comma-separated list of variable names to drop").OverrideDefaultFromEnvar("ECSQ_DROP_ENV_VARS").StringVar(&flagDrop)
 	containerEnvCommand.Action(func(ctx *kingpin.ParseContext) error {
 		task, err := getServiceDetail(svc, argClusterName, argServiceName)
 		app.FatalIfError(err, "Could not describe service")

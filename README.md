@@ -223,7 +223,9 @@ into the `env` function
 Running the command as `eval "$(ecsq container-env <my_cluster> <my_service>) --format=export"` will
 automatically populate your environment with container's ECS environment variables. If you want to omit
 specific variables here, you can provide a comma-separated list of names via the `--drop` flag. This list is
-case-insensitive, e.g. `--drop node_env,port` is the same as `--drop NODE_ENV,PORT`.
+case-insensitive, e.g. `--drop node_env,port` is the same as `--drop NODE_ENV,PORT`. The
+`ECSQ_DROP_ENV_VARS` environment variable can also be used in place of `--drop` to drop the same
+vars across invocations.
 
 ```
 > ecsq container-env ecs-prod applepicker --container applepicker
@@ -256,3 +258,6 @@ service name to. This is kind of an obscure option, to allow writing shorter ser
 service names follow a predefined format. For example, if your services names follow the format
 `service-{{.Name}}-{{.Cluster}}`, then the service `applepicker` on cluster `ecs-prod` will be
 expanded to `service-applepicker-ecs-prod` when querying ECS.
+
+`ECSQ_DROP_ENV_VARS` can be used to set a default value for `container-env` command's `--drop` flag,
+to always omit these vars.
