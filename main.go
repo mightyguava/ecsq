@@ -327,12 +327,11 @@ Use the "task" command to get details of a task. For example:
 		table := tablewriter.NewWriter(os.Stdout)
 		taskID := ParseARN(*task.TaskArn).Name
 		taskDefinitionARN := ParseARN(*task.TaskDefinitionArn)
-		taskDefinition := taskDefinitionARN.Name
 		containerInstanceID := ParseARN(*task.ContainerInstanceArn).Name
 		rows := [][]string{
 			{"Task ID", taskID},
 			{"Task ARN", *task.TaskArn},
-			{"Task Definition", taskDefinition},
+			{"Task Definition", *task.TaskDefinitionArn},
 			{"Container Instance", containerInstanceID},
 			{"EC2 Instance", *containerInstance.Ec2InstanceId},
 			{"EC2 Instance Private IP", *ec2Instance.PrivateIpAddress},
