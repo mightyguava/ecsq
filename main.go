@@ -180,11 +180,15 @@ func main() {
 			for _, piece := range container.Command {
 				command = append(command, *piece)
 			}
+			memory := *container.MemoryReservation
+			if container.Memory != nil {
+				memory = *container.Memory
+			}
 			table.Append([]string{
 				*container.Name,
 				*container.Image,
 				strconv.FormatInt(*container.Cpu, 10),
-				strconv.FormatInt(*container.Memory, 10),
+				strconv.FormatInt(memory, 10),
 				strings.Join(command, " "),
 			})
 		}
