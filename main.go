@@ -486,7 +486,7 @@ func ParseARN(s string) *ARN {
 	return arn
 }
 
-const reUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+const reUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{32}"
 
 func isTaskARN(s string) bool {
 	return regexp.MustCompile(`arn:aws:ecs:[a-z]+-[a-z]+-\d:\d+:task/` + reUUID).MatchString(s)
