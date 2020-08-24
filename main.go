@@ -286,7 +286,7 @@ Use the "task" command to get details of a task. For example:
 	describeTaskCommand.Arg("cluster", "Name of the cluster").Required().StringVar(&argClusterName)
 	describeTaskCommand.Arg("task or service", "ID or ARN of the task or name of service").Required().StringVar(&argTaskID)
 	describeTaskCommand.Action(func(ctx *kingpin.ParseContext) error {
-		if !isTaskARN(argTaskID) && !isUUID(argTaskID) {
+		if !isTaskARN(argTaskID) && !isTaskID(argTaskID) {
 			fmt.Println("Invalid task ID, assuming this is a service name. Looking up arbitrary task for service")
 			serviceName := FormatServiceName(argClusterName, argTaskID)
 			taskArns, err := getTasksArns(svc, argClusterName, serviceName, "RUNNING")
@@ -486,14 +486,18 @@ func ParseARN(s string) *ARN {
 	return arn
 }
 
-const reUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{32}"
+const taskIDRawPattern = `(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{32})`
+var (
+	taskIDPattern = regexp.MustCompile("^"+taskIDRawPattern+"$")
+	taskARNPattern = regexp.MustCompile(`^arn:aws:ecs:[a-z]+-[a-z]+-\d:\d+:task/(([a-zA-Z-])+/)?` + taskIDRawPattern+ "$")
+)
 
 func isTaskARN(s string) bool {
-	return regexp.MustCompile(`arn:aws:ecs:[a-z]+-[a-z]+-\d:\d+:task/` + reUUID).MatchString(s)
+	return taskARNPattern.MatchString(s)
 }
 
-func isUUID(s string) bool {
-	return regexp.MustCompile(reUUID).MatchString(s)
+func isTaskID(s string) bool {
+	return taskIDPattern.MatchString(s)
 }
 
 func getTaskDetail(svc *ecs.ECS, clusterName, taskID string) (*ecs.Task, error) {
