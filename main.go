@@ -16,9 +16,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 
+	kingpin "github.com/alecthomas/kingpin/v2"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/olekukonko/tablewriter"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 func main() {
@@ -487,9 +487,10 @@ func ParseARN(s string) *ARN {
 }
 
 const taskIDRawPattern = `(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{32})`
+
 var (
-	taskIDPattern = regexp.MustCompile("^"+taskIDRawPattern+"$")
-	taskARNPattern = regexp.MustCompile(`^arn:aws:ecs:[a-z]+-[a-z]+-\d:\d+:task/(([a-zA-Z-])+/)?` + taskIDRawPattern+ "$")
+	taskIDPattern  = regexp.MustCompile("^" + taskIDRawPattern + "$")
+	taskARNPattern = regexp.MustCompile(`^arn:aws:ecs:[a-z]+-[a-z]+-\d:\d+:task/(([a-zA-Z-])+/)?` + taskIDRawPattern + "$")
 )
 
 func isTaskARN(s string) bool {
