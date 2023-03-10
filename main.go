@@ -31,12 +31,12 @@ func main() {
 
 	app := kingpin.New("ecsq", "A friendly ECS CLI")
 	app.Flag("profile", "AWS profile to use. Overrides the ~/.aws/config and AWS_DEFAULT_PROFILE").StringVar(&AWSProfile)
-	app.Flag("region", "AWS region").OverrideDefaultFromEnvar("AWS_DEFAULT_REGION").StringVar(&AWSRegion)
+	app.Flag("region", "AWS region").Envar("AWS_DEFAULT_REGION").StringVar(&AWSRegion)
 	config := aws.Config{}
-	if AWSRegion != "" {
-		config.Region = aws.String(AWSRegion)
-	}
 	app.PreAction(func(ctx *kingpin.ParseContext) error {
+		if AWSRegion != "" {
+			config.Region = aws.String(AWSRegion)
+		}
 		// Initialize the session and service before any commands are run
 		sess = session.Must(session.NewSessionWithOptions(session.Options{
 			Config:                  config,
@@ -183,8 +183,8 @@ func main() {
 			table.Append([]string{
 				*container.Name,
 				*container.Image,
-				strconv.FormatInt(*container.Cpu, 10),
-				strconv.FormatInt(*container.Memory, 10),
+				strconv.FormatInt(aws.Int64Value(container.Cpu), 10),
+				strconv.FormatInt(aws.Int64Value(container.Memory), 10),
 				strings.Join(command, " "),
 			})
 		}
